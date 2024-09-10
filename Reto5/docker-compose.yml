@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  servidor:
+    build:
+      context: ./servidor
+      dockerfile: Dockerfile.servidor
+    ports:
+      - "5000:80"
+    environment:
+      - FLASK_ENV=development
+
+  cliente:
+    build:
+      context: ./cliente
+      dockerfile: Dockerfile.cliente
+    depends_on:
+      - servidor
+    environment:
+      - AUTH_URL=http://servidor:80/login
+      - SALUDO_URL=http://servidor:80/saludo

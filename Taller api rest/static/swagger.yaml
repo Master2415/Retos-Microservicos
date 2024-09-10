@@ -1,0 +1,205 @@
+openapi: 3.0.0
+info:
+  title: Gestión de Usuarios API
+  description: API para gestionar usuarios, incluyendo registro, login, actualización y recuperación de contraseña.
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:5000
+paths:
+  /usuarios/:
+    post:
+      summary: Registra un nuevo usuario
+      requestBody:
+        description: Datos del usuario para el registro
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usuario:
+                  type: string
+                  example: "mi_usuario"
+                email:
+                  type: string
+                  format: email
+                  example: "mi_email@example.com"
+                clave:
+                  type: string
+                  example: "mi_contraseña"
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+        '400':
+          description: Datos incompletos o formato inválido
+        '409':
+          description: Email o nombre de usuario ya registrado
+
+  /usuarios:
+    get:
+      summary: Obtiene la lista de todos los usuarios
+      responses:
+        '200':
+          description: Lista de usuarios devuelta exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    usuario:
+                      type: string
+                      example: "mi_usuario"
+                    email:
+                      type: string
+                      format: email
+                      example: "mi_email@example.com"
+        '404':
+          description: No hay usuarios registrados
+        '500':
+          description: Error al consultar la base de datos
+
+  /usuarios/{id}:
+    get:
+      summary: Obtiene un usuario por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  usuario:
+                    type: string
+                    example: "mi_usuario"
+                  email:
+                    type: string
+                    format: email
+                    example: "mi_email@example.com"
+        '404':
+          description: Usuario no encontrado
+        '500':
+          description: Error al consultar la base de datos
+
+    put:
+      summary: Actualiza un usuario existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Datos del usuario para actualizar
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usuario:
+                  type: string
+                  example: "mi_usuario_actualizado"
+                email:
+                  type: string
+                  format: email
+                  example: "mi_email_actualizado@example.com"
+                clave:
+                  type: string
+                  example: "mi_nueva_contraseña"
+      responses:
+        '200':
+          description: Usuario actualizado exitosamente
+        '400':
+          description: Datos incompletos o formato inválido
+        '404':
+          description: Usuario no encontrado
+        '500':
+          description: Error al actualizar el usuario
+
+    delete:
+      summary: Elimina un usuario por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Usuario eliminado exitosamente
+        '404':
+          description: Usuario no encontrado
+        '500':
+          description: Error al eliminar el usuario
+
+  /usuarios/login:
+    post:
+      summary: Autentica a un usuario y genera un token JWT
+      requestBody:
+        description: Datos del usuario para login
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "mi_email@example.com"
+                clave:
+                  type: string
+                  example: "mi_contraseña"
+      responses:
+        '200':
+          description: Login exitoso, retorna token de autenticación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNjcwNTQxNjAwfQ.N3INRAe3OMszNZUSzD50JfaA3bFAHlE0b0V_o7RTqP3tE"
+        '401':
+          description: Credenciales incorrectas
+        '500':
+          description: Error en el proceso de autenticación
+
+  /usuarios/recover-password:
+    post:
+      summary: Envía instrucciones para recuperar la contraseña
+      requestBody:
+        description: Email del usuario para recuperación de contraseña
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "mi_email@example.com"
+      responses:
+        '200':
+          description: Instrucciones para recuperar la clave enviadas al email
+        '404':
+          description: Email no registrado
+        '500':
+          description: Error al enviar el correo de recuperación

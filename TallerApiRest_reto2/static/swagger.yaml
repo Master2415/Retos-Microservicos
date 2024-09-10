@@ -1,0 +1,409 @@
+openapi: 3.0.0
+info:
+  title: Gestión de Usuarios API
+  description: API para gestionar usuarios, incluyendo registro, login, actualización y recuperación de contraseña.
+  version: 1.0.0
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []
+
+servers:
+  - url: http://127.0.0.1:5000
+
+paths:
+  /usuarios/:
+    post:
+      summary: Registra un nuevo usuario
+      requestBody:
+        description: Datos del usuario para el registro
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usuario:
+                  type: string
+                  example: "mi_usuario"
+                email:
+                  type: string
+                  format: email
+                  example: "mi_email@example.com"
+                clave:
+                  type: string
+                  example: "mi_contraseña"
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+        '400':
+          description: Datos incompletos o formato inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Datos incompletos o formato inválido"
+                  code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: "Algunos campos están vacíos o no cumplen con el formato requerido."
+        '409':
+          description: Email o nombre de usuario ya registrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Conflicto de registro"
+                  code:
+                    type: integer
+                    example: 409
+                  message:
+                    type: string
+                    example: "El email o nombre de usuario ya están registrados."
+
+  /usuarios:
+    get:
+      summary: Obtiene la lista de todos los usuarios con paginación
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Número de página de los resultados
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: Número de usuarios por página
+          required: false
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: Lista de usuarios devuelta exitosamente con información de paginación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    type: integer
+                    example: 1
+                  per_page:
+                    type: integer
+                    example: 10
+                  total_pages:
+                    type: integer
+                    example: 5
+                  total_users:
+                    type: integer
+                    example: 45
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        usuario:
+                          type: string
+                          example: "mi_usuario"
+                        email:
+                          type: string
+                          format: email
+                          example: "mi_email@example.com"
+        '404':
+          description: No hay usuarios registrados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No se encontraron usuarios"
+                  code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: "La lista de usuarios está vacía."
+        '500':
+          description: Error al consultar la base de datos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error interno del servidor"
+                  code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: "Hubo un error al consultar la base de datos."
+
+  /usuarios/{id}:
+    get:
+      summary: Obtiene un usuario por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  usuario:
+                    type: string
+                    example: "mi_usuario"
+                  email:
+                    type: string
+                    format: email
+                    example: "mi_email@example.com"
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Usuario no encontrado"
+                  code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: "No existe un usuario con el ID proporcionado."
+        '500':
+          description: Error al consultar la base de datos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error interno del servidor"
+                  code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: "Error al consultar la base de datos."
+
+    put:
+      summary: Actualiza un usuario existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Datos del usuario para actualizar
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usuario:
+                  type: string
+                  example: "mi_usuario_actualizado"
+                email:
+                  type: string
+                  format: email
+                  example: "mi_email_actualizado@example.com"
+                clave:
+                  type: string
+                  example: "mi_nueva_contraseña"
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Usuario actualizado exitosamente
+        '400':
+          description: Datos incompletos o formato inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Datos incompletos o formato inválido"
+                  code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: "Campos faltantes o datos incorrectos en la solicitud."
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Usuario no encontrado"
+                  code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: "No se pudo encontrar el usuario especificado."
+        '500':
+          description: Error al actualizar el usuario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error interno del servidor"
+                  code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: "Error al actualizar el usuario en la base de datos."
+
+    delete:
+      summary: Elimina un usuario por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Usuario eliminado exitosamente
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Usuario no encontrado"
+                  code:
+                    type: integer
+                    example: 404
+                  message:
+                    type: string
+                    example: "No se pudo encontrar el usuario para eliminar."
+        '500':
+          description: Error al eliminar el usuario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error interno del servidor"
+                  code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: "Error al eliminar el usuario en la base de datos."
+
+  /usuarios/login:
+    post:
+      summary: Autentica a un usuario y genera un token JWT
+      requestBody:
+        description: Datos del usuario para login
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "mi_email@example.com"
+                clave:
+                  type: string
+                  example: "mi_contraseña"
+      responses:
+        '200':
+          description: Login exitoso, retorna token de autenticación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '401':
+          description: Credenciales incorrectas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Credenciales inválidas"
+                  code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: "El correo o la contraseña no son correctos."
+        '500':
+          description: Error al autenticar usuario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error interno del servidor"
+                  code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: "Hubo un problema al autenticar el usuario."
